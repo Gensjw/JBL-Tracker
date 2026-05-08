@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JDL Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+--bg: #F5F4F0;
+--surface: #FFFFFF;
+--surface2: #FAFAF8;
+--border: #E8E6E0;
+--border2: #D4D0C8;
+--text: #1A1916;
+--text2: #6B6860;
+--text3: #9B9890;
+--accent: #2563EB;
+--accent-light: #EFF4FF;
+--green: #16A34A;
+--green-light: #DCFCE7;
+--amber: #D97706;
+--amber-light: #FEF3C7;
+--red: #DC2626;
+--red-light: #FEE2E2;
+--slate: #64748B;
+--slate-light: #F1F5F9;
+--radius: 12px;
+--radius-sm: 8px;
+--shadow: none;
+--shadow-md: none;
+--shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+body {
+font-family: 'DM Sans', sans-serif;
+background: var(--bg);
+color: var(--text);
+min-height: 100vh;
+font-size: 14px;
+line-height: 1.5;
+}
+
+/* HEADER */
+.header {
+background: var(--surface);
+border-bottom: 1px solid var(--border);
+padding: 0 28px;
+height: 60px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+position: sticky;
+top: 0;
+z-index: 100;
+}
+.logo {
+display: flex;
+align-items: center;
+gap: 10px;
+font-weight: 600;
+font-size: 16px;
+letter-spacing: -0.3px;
+}
+.logo-icon {
+width: 32px; height: 32px;
+background: var(--accent);
+border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+color: white; font-size: 15px;
+}
+.header-right {
+display: flex; align-items: center; gap: 10px;
+}
+.date-badge {
+font-size: 12px;
+color: var(--text2);
+font-family: 'DM Mono', monospace;
+background: var(--bg);
+border: 1px solid var(--border);
+padding: 5px 10px;
+border-radius: 6px;
+}
+
+/* LAYOUT */
+.layout {
+display: flex;
+min-height: calc(100vh - 60px);
+}
+
+/* SIDEBAR */
+.sidebar {
+width: 240px;
+min-width: 240px;
+background: var(--surface);
+border-right: 1px solid var(--border);
+padding: 20px 0;
+display: flex;
+flex-direction: column;
+}
+.sidebar-label {
+font-size: 10px;
+font-weight: 600;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: var(--text3);
+padding: 0 20px;
+margin-bottom: 8px;
+}
+.class-list { flex: 1; }
+.class-item {
+display: flex;
+align-items: center;
+gap: 10px;
+padding: 9px 20px;
+cursor: pointer;
+transition: background 0.12s;
+position: relative;
+border-radius: 0;
+}
+.class-item:hover { background: var(--bg); }
+.class-item.active {
+background: var(--accent-light);
+color: var(--accent);
+}
+.class-item.active::before {
+content: '';
+position: absolute;
+left: 0; top: 4px; bottom: 4px;
+width: 3px;
+background: var(--accent);
+border-radius: 0 3px 3px 0;
+}
+.class-dot {
+width: 8px; height: 8px;
+border-radius: 50%;
+flex-shrink: 0;
+}
+.class-name { font-weight: 500; font-size: 13px; flex: 1; }
+.class-count {
+font-size: 11px;
+color: var(--text3);
+font-family: 'DM Mono', monospace;
+}
+.class-item.active .class-count { color: var(--accent); opacity: 0.7; }
+
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+.add-class-btn {
+width: 100%;
+display: flex; align-items: center; gap: 8px;
+padding: 9px 12px;
+border: 1.5px dashed var(--border2);
+border-radius: var(--radius-sm);
+background: transparent;
+color: var(--text2);
+font-family: 'DM Sans', sans-serif;
+font-size: 13px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.15s;
+}
+.add-class-btn:hover {
+border-color: var(--accent);
+color: var(--accent);
+background: var(--accent-light);
+}
+
+/* MAIN */
+.main {
+flex: 1;
+padding: 28px;
+overflow-y: auto;
+max-height: calc(100vh - 60px);
+}
+
+.main-header {
+display: flex; align-items: flex-start; justify-content: space-between;
+margin-bottom: 24px;
+}
+.class-title {
+font-size: 22px;
+font-weight: 600;
+letter-spacing: -0.4px;
+}
+.class-subtitle { color: var(--text2); font-size: 13px; margin-top: 2px; }
+
+.main-actions { display: flex; gap: 8px; }
+
+/* STATS ROW */
+.stats-row {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 12px;
+margin-bottom: 24px;
+}
+.stat-card {
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: var(--radius);
+padding: 16px;
+display: flex; align-items: center; gap: 14px;
+box-shadow: var(--shadow);
+}
+.stat-icon {
+width: 38px; height: 38px;
+border-radius: 10px;
+display: flex; align-items: center; justify-content: center;
+font-size: 16px;
+}
+.stat-val { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; line-height: 1; }
+.stat-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; font-weight: 500; }
+
+/* SEARCH + FILTER */
+.toolbar {
+display: flex; gap: 10px; align-items: center; margin-bottom: 16px;
+}
+.search-wrap {
+flex: 1; position: relative;
+}
+.search-icon {
+position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+color: var(--text3); font-size: 14px; pointer-events: none;
+}
+.search-input {
+width: 100%;
+padding: 9px 12px 9px 34px;
+border: 1px solid var(--border);
+border-radius: var(--radius-sm);
+background: var(--surface);
+font-family: 'DM Sans', sans-serif;
+font-size: 13px;
+color: var(--text);
+outline: none;
+transition: border 0.15s;
+}
+.search-input:focus { border-color: var(--accent); }
+
+.filter-btn {
+padding: 8px 14px;
+border: 1px solid var(--border);
+border-radius: var(--radius-sm);
+background: var(--surface);
+color: var(--text2);
+font-family: 'DM Sans', sans-serif;
+font-size: 13px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.12s;
+white-space: nowrap;
+}
+.filter-btn:hover, .filter-btn.active {
+border-color: var(--accent);
+color: var(--accent);
+background: var(--accent-light);
+}
+
+/* STUDENT GRID */
+.student-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+gap: 12px;
+}
+
+.student-card {
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: var(--radius);
+padding: 16px;
+box-shadow: var(--shadow);
+transition: box-shadow 0.15s, transform 0.15s;
+position: relative;
+overflow: hidden;
+}
+.student-card:hover { background: var(--surface2); }
+
+.student-card-top {
+display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.avatar {
+width: 40px; height: 40px;
+border-radius: 50%;
+display: flex; align-items: center; justify-content: center;
+font-weight: 600; font-size: 15px;
+flex-shrink: 0;
+}
+.student-name { font-weight: 600; font-size: 14px; line-height: 1.2; }
+.student-id { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+.student-status-badge {
+display: inline-flex; align-items: center; gap: 5px;
+padding: 4px 10px;
+border-radius: 20px;
+font-size: 11px;
+font-weight: 600;
+margin-bottom: 12px;
+letter-spacing: 0.1px;
+}
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+.status-present .student-status-badge { background: var(--green-light); color: var(--green); }
+.status-present .badge-dot { background: var(--green); }
+.status-bathroom .student-status-badge { background: var(--amber-light); color: var(--amber); }
+.status-bathroom .badge-dot { background: var(--amber); }
+.status-out .student-status-badge { background: var(--slate-light); color: var(--slate); }
+.status-out .badge-dot { background: var(--slate); }
+.status-absent .student-status-badge { background: var(--red-light); color: var(--red); }
+.status-absent .badge-dot { background: var(--red); }
+
+.status-btns {
+display: grid; grid-template-columns: 1fr 1fr;
+gap: 6px;
+}
+.status-btn {
+padding: 7px 6px;
+border-radius: 7px;
+border: 1.5px solid var(--border);
+background: var(--surface2);
+font-family: 'DM Sans', sans-serif;
+font-size: 11px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.12s;
+display: flex; align-items: center; justify-content: center; gap: 4px;
+color: var(--text2);
+}
+.status-btn:hover { border-color: var(--border2); background: var(--bg); }
+.status-btn.active-present { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.status-btn.active-bathroom { border-color: var(--amber); background: var(--amber-light); color: var(--amber); }
+.status-btn.active-out { border-color: var(--slate); background: var(--slate-light); color: var(--slate); }
+.status-btn.active-absent { border-color: var(--red); background: var(--red-light); color: var(--red); }
+
+.card-footer {
+display: flex; align-items: center; justify-content: space-between;
+margin-top: 12px; padding-top: 10px;
+border-top: 1px solid var(--border);
+}
+.timestamp { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.del-btn {
+width: 22px; height: 22px;
+border-radius: 5px;
+border: none; background: none;
+cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+color: var(--text3);
+transition: all 0.12s;
+font-size: 16px;
+line-height: 1;
+font-weight: 400;
+}
+.del-btn:hover { background: var(--red-light); color: var(--red); }
+
+/* EMPTY */
+.empty-state {
+grid-column: 1/-1;
+text-align: center;
+padding: 60px 20px;
+color: var(--text3);
+}
+.empty-icon { font-size: 36px; margin-bottom: 12px; }
+.empty-title { font-weight: 600; font-size: 16px; color: var(--text2); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; }
+
+/* MODALS */
+.modal-overlay {
+position: fixed; inset: 0;
+background: rgba(0,0,0,0.3);
+backdrop-filter: blur(4px);
+z-index: 200;
+display: flex; align-items: center; justify-content: center;
+opacity: 0; pointer-events: none;
+transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+background: var(--surface);
+border-radius: 16px;
+padding: 28px;
+width: 380px;
+box-shadow: var(--shadow-lg);
+transform: translateY(8px) scale(0.98);
+transition: transform 0.2s;
+}
+.modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+.modal-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 20px; }
+.modal-field { margin-bottom: 16px; }
+.modal-label { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; display: block; }
+.modal-input {
+width: 100%;
+padding: 10px 12px;
+border: 1.5px solid var(--border);
+border-radius: var(--radius-sm);
+font-family: 'DM Sans', sans-serif;
+font-size: 14px;
+color: var(--text);
+outline: none;
+transition: border 0.15s;
+background: var(--surface2);
+}
+.modal-input:focus { border-color: var(--accent); background: var(--surface); }
+
+.color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+.color-swatch {
+width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+transition: transform 0.12s, box-shadow 0.12s;
+border: 3px solid transparent;
+}
+.color-swatch:hover { transform: scale(1.1); }
+.color-swatch.selected { border-color: var(--text); transform: scale(1.1); }
+
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+.btn {
+flex: 1; padding: 10px;
+border-radius: var(--radius-sm);
+font-family: 'DM Sans', sans-serif;
+font-size: 14px; font-weight: 600;
+cursor: pointer;
+transition: all 0.12s;
+border: none;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #1D4ED8; }
+.btn-ghost { background: var(--bg); color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--border); }
+
+/* No class selected */
+.welcome-screen {
+flex: 1; display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+padding: 60px 20px; text-align: center; color: var(--text2);
+}
+.welcome-icon { font-size: 48px; margin-bottom: 16px; }
+.welcome-title { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
+.welcome-sub { font-size: 14px; max-width: 300px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+@media (max-width: 700px) {
+.sidebar { width: 56px; min-width: 56px; }
+.class-name, .class-count, .sidebar-label { display: none; }
+.class-item { justify-content: center; }
+.stats-row { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+<div class="logo">
+<div class="logo-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="white"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="white" opacity="0.7"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="white" opacity="0.7"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="white" opacity="0.5"/></svg></div>
+JDL Tracker
+</div>
+<div class="header-right">
+<div class="date-badge" id="dateBadge"></div>
+</div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+<aside class="sidebar">
+<div class="sidebar-label">Classes</div>
+<div class="class-list" id="classList"></div>
+<div class="sidebar-footer">
+<button class="add-class-btn" onclick="openAddClass()">
+<span>＋</span> Add Class
+</button>
+</div>
+</aside>
+
+<main class="main" id="mainContent"></main>
+</div>
+
+<!-- ADD CLASS MODAL -->
+<div class="modal-overlay" id="addClassModal">
+<div class="modal">
+<div class="modal-title">Add New Class</div>
+<div class="modal-field">
+<label class="modal-label">Class Name</label>
+<input class="modal-input" id="classNameInput" placeholder="e.g. 8th Grade, Period 3…" maxlength="40">
+</div>
+<div class="modal-field">
+<label class="modal-label">Color</label>
+<div class="color-picker" id="colorPicker"></div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-ghost" onclick="closeModal('addClassModal')">Cancel</button>
+<button class="btn btn-primary" onclick="submitAddClass()">Add Class</button>
+</div>
+</div>
+</div>
+
+<!-- ADD STUDENT MODAL -->
+<div class="modal-overlay" id="addStudentModal">
+<div class="modal">
+<div class="modal-title">Add Student</div>
+<div class="modal-field">
+<label class="modal-label">First Name</label>
+<input class="modal-input" id="studentFirstInput" placeholder="First name" maxlength="30">
+</div>
+<div class="modal-field">
+<label class="modal-label">Last Name</label>
+<input class="modal-input" id="studentLastInput" placeholder="Last name" maxlength="30">
+</div>
+<div class="modal-field">
+<label class="modal-label">Student ID <span style="color:var(--text3);font-weight:400">(optional)</span></label>
+<input class="modal-input" id="studentIdInput" placeholder="e.g. 20491" maxlength="20">
+</div>
+<div class="modal-actions">
+<button class="btn btn-ghost" onclick="closeModal('addStudentModal')">Cancel</button>
+<button class="btn btn-primary" onclick="submitAddStudent()">Add Student</button>
+</div>
+</div>
+</div>
+
+<script>
+const COLORS = ['#2563EB','#16A34A','#D97706','#DC2626','#7C3AED','#0891B2','#DB2777','#059669','#EA580C','#6366F1'];
+const AVATAR_COLORS = [
+['#DBEAFE','#1D4ED8'],['#DCFCE7','#15803D'],['#FEF3C7','#B45309'],
+['#FEE2E2','#B91C1C'],['#EDE9FE','#6D28D9'],['#CFFAFE','#0E7490'],
+['#FCE7F3','#BE185D'],['#D1FAE5','#047857'],['#FFEDD5','#C2410C'],['#E0E7FF','#4338CA']
+];
+
+let data = { classes: [], students: {} };
+let selectedClass = null;
+let selectedColor = COLORS[0];
+let filterStatus = 'all';
+let searchQuery = '';
+
+function save() {
+try { localStorage.setItem('JBLV9_data', JSON.stringify(data)); } catch(e){}
+}
+
+function load() {
+try {
+const s = localStorage.getItem('JBLV9_data');
+if (s) { data = JSON.parse(s); return; }
+} catch(e){}
+// Seed preset classes and students on first load
+const seed = [
+  {
+    id: 'cls_001', name: '8A Classroom', color: '#2563EB',
+    students: [
+      {id:'s01',first:'Wynn',last:'Browne',sid:'10201',status:'present',updatedAt:'',colorIdx:0},
+      {id:'s02',first:'Emille',last:'Dawes',sid:'10202',status:'present',updatedAt:'',colorIdx:1},
+      {id:'s03',first:'Kinley',last:'Driver',sid:'10203',status:'present',updatedAt:'',colorIdx:2},
+      {id:'s04',first:'Miles',last:'Lovelace',sid:'10204',status:'present',updatedAt:'',colorIdx:3},
+      {id:'s05',first:'Marcus',last:'Mayer',sid:'10205',status:'present',updatedAt:'',colorIdx:4},
+      {id:'s06',first:'Emily',last:'Nelson',sid:'10206',status:'present',updatedAt:'',colorIdx:5},
+      {id:'s07',first:'Jeremiah',last:'Stancell',sid:'10207',status:'present',updatedAt:'',colorIdx:6},
+      {id:'s08',first:'Ziva',last:'Thornton',sid:'10208',status:'present',updatedAt:'',colorIdx:7},
+      {id:'s09',first:'Jackson',last:'Tolley',sid:'10209',status:'present',updatedAt:'',colorIdx:8},
+      {id:'s10',first:'Leo',last:'Vanbeek',sid:'10210',status:'present',updatedAt:'',colorIdx:9},
+      {id:'s11',first:'William',last:'Vega',sid:'10211',status:'present',updatedAt:'',colorIdx:0},
+      {id:'s12',first:'Lindsey',last:'Watkins',sid:'10212',status:'present',updatedAt:'',colorIdx:1},
+      {id:'s13',first:'Averie',last:'Wright',sid:'10213',status:'present',updatedAt:'',colorIdx:1},
+      {id:'s14',first:'Emery',last:'Wright',sid:'10214',status:'present',updatedAt:'',colorIdx:1},
+      {id:'s15',first:'Silas',last:'Young',sid:'10215',status:'present',updatedAt:'',colorIdx:1},
+    ]
+  },
+  {
+    id: 'cls_002', name: '8B Classroom', color: '#2563EB',
+    students: [
+      {id:'s16',first:'Allison',last:'Alvarado Galindo',sid:'10201',status:'present',updatedAt:'',colorIdx:0},
+      {id:'s17',first:'Jadant',last:'Baldwin',sid:'10202',status:'present',updatedAt:'',colorIdx:1},
+      {id:'s18',first:'Dallas',last:'Colvard',sid:'10203',status:'present',updatedAt:'',colorIdx:2},
+      {id:'s19',first:'Stella',last:'Congdon',sid:'10204',status:'present',updatedAt:'',colorIdx:3},
+      {id:'s20',first:'Cole',last:'Davis',sid:'10205',status:'present',updatedAt:'',colorIdx:4},
+      {id:'s21',first:'Ella',last:'Davis',sid:'10206',status:'present',updatedAt:'',colorIdx:5},
+      {id:'s22',first:'Leo',last:'Dipert',sid:'10207',status:'present',updatedAt:'',colorIdx:6},
+      {id:'s23',first:'MaKena',last:'Forbes',sid:'10208',status:'present',updatedAt:'',colorIdx:7},
+      {id:'s24',first:'James',last:'Gentry',sid:'10209',status:'present',updatedAt:'',colorIdx:8},
+      {id:'s25',first:'Rylee',last:'Holloway',sid:'10210',status:'present',updatedAt:'',colorIdx:9},
+      {id:'s26',first:'Whitley',last:'Jones',sid:'10211',status:'present',updatedAt:'',colorIdx:0},
+      {id:'s27',first:'Asher',last:'Kidd',sid:'10212',status:'present',updatedAt:'',colorIdx:1},
+      {id:'s28',first:'Jordan',last:'Martin',sid:'10213',status:'present',updatedAt:'',colorIdx:2},
+      {id:'s29',first:'Evangeline',last:'Prentice',sid:'10214',status:'present',updatedAt:'',colorIdx:3},
+      {id:'s30',first:'Linkin',last:'Rayle',sid:'10215',status:'present',updatedAt:'',colorIdx:4},
+      {id:'s31',first:'Stella',last:'Shaughnessy',sid:'10216',status:'present',updatedAt:'',colorIdx:5},
+    ]
+  },
+  {
+    id: 'cls_003', name: '7A Classroom', color: '#2563EB',
+    students: [
+      {id:'s32',first:'Amara',last:'Johnson',sid:'10201',status:'present',updatedAt:'',colorIdx:0},
+      {id:'s33',first:'Ben',last:'Okafor',sid:'10202',status:'present',updatedAt:'',colorIdx:1},
+      {id:'s34',first:'Chloe',last:'Martinez',sid:'10203',status:'present',updatedAt:'',colorIdx:2},
+      {id:'s35',first:'Daniel',last:'Park',sid:'10204',status:'present',updatedAt:'',colorIdx:3},
+      {id:'s36',first:'Elena',last:'Nguyen',sid:'10205',status:'present',updatedAt:'',colorIdx:4},
+      {id:'s37',first:'Finn',last:'Castillo',sid:'10206',status:'present',updatedAt:'',colorIdx:5},
+      {id:'s38',first:'Grace',last:'Williams',sid:'10207',status:'present',updatedAt:'',colorIdx:6},
+      {id:'s39',first:'Henry',last:'Patel',sid:'10208',status:'present',updatedAt:'',colorIdx:7},
+      {id:'s40',first:'Isla',last:'Chen',sid:'10209',status:'present',updatedAt:'',colorIdx:8},
+      {id:'s41',first:'James',last:'Robinson',sid:'10210',status:'present',updatedAt:'',colorIdx:9},
+      {id:'s42',first:'Kira',last:'Thompson',sid:'10211',status:'present',updatedAt:'',colorIdx:0},
+      {id:'s43',first:'Luca',last:'Hernandez',sid:'10212',status:'present',updatedAt:'',colorIdx:1},
+    ]
+  },
+  {
+    id: 'cls_004', name: '7B Classroom', color: '#16A34A',
+    students: [
+      {id:'s44',first:'Maya',last:'Turner',sid:'10401',status:'present',updatedAt:'',colorIdx:2},
+      {id:'s45',first:'Noah',last:'Davis',sid:'10402',status:'present',updatedAt:'',colorIdx:3},
+      {id:'s46',first:'Olivia',last:'Kim',sid:'10403',status:'present',updatedAt:'',colorIdx:4},
+      {id:'s47',first:'Pedro',last:'Gonzalez',sid:'10404',status:'present',updatedAt:'',colorIdx:5},
+      {id:'s48',first:'Quinn',last:'Adams',sid:'10405',status:'present',updatedAt:'',colorIdx:6},
+      {id:'s49',first:'Ruby',last:'Scott',sid:'10406',status:'present',updatedAt:'',colorIdx:7},
+      {id:'s50',first:'Sam',last:'Lee',sid:'10407',status:'present',updatedAt:'',colorIdx:8},
+      {id:'s51',first:'Tara',last:'Wilson',sid:'10408',status:'present',updatedAt:'',colorIdx:9},
+      {id:'s52',first:'Uri',last:'Flores',sid:'10409',status:'present',updatedAt:'',colorIdx:0},
+      {id:'s53',first:'Vera',last:'White',sid:'10410',status:'present',updatedAt:'',colorIdx:1},
+    ]
+  },
+  {
+    id: 'cls_005', name: '6A Classroom', color: '#7C3AED',
+    students: [
+      {id:'s54',first:'Will',last:'Harris',sid:'10501',status:'present',updatedAt:'',colorIdx:2},
+      {id:'s55',first:'Xena',last:'Clark',sid:'10502',status:'present',updatedAt:'',colorIdx:3},
+      {id:'s56',first:'Yusuf',last:'Lewis',sid:'10503',status:'present',updatedAt:'',colorIdx:4},
+      {id:'s57',first:'Zoe',last:'Walker',sid:'10504',status:'present',updatedAt:'',colorIdx:5},
+      {id:'s58',first:'Aaron',last:'Hall',sid:'10505',status:'present',updatedAt:'',colorIdx:6},
+      {id:'s59',first:'Bella',last:'Young',sid:'10506',status:'present',updatedAt:'',colorIdx:7},
+      {id:'s60',first:'Carlos',last:'Allen',sid:'10507',status:'present',updatedAt:'',colorIdx:8},
+      {id:'s61',first:'Diana',last:'King',sid:'10508',status:'present',updatedAt:'',colorIdx:9},
+      {id:'s62',first:'Eli',last:'Wright',sid:'10509',status:'present',updatedAt:'',colorIdx:0},
+      {id:'s63',first:'Fiona',last:'Lopez',sid:'10510',status:'present',updatedAt:'',colorIdx:1},
+      {id:'s64',first:'Gavin',last:'Hill',sid:'10511',status:'present',updatedAt:'',colorIdx:2},
+    ]
+  },
+  {
+    id: 'cls_006', name: '6B Classroom', color: '#D97706',
+    students: [
+      {id:'s65',first:'Hana',last:'Scott',sid:'10701',status:'present',updatedAt:'',colorIdx:3},
+      {id:'s66',first:'Ivan',last:'Green',sid:'10702',status:'present',updatedAt:'',colorIdx:4},
+      {id:'s67',first:'Julia',last:'Baker',sid:'10703',status:'present',updatedAt:'',colorIdx:5},
+      {id:'s68',first:'Kai',last:'Nelson',sid:'10704',status:'present',updatedAt:'',colorIdx:6},
+      {id:'s69',first:'Luna',last:'Carter',sid:'10705',status:'present',updatedAt:'',colorIdx:7},
+      {id:'s70',first:'Marco',last:'Mitchell',sid:'10706',status:'present',updatedAt:'',colorIdx:8},
+      {id:'s71',first:'Nina',last:'Perez',sid:'10707',status:'present',updatedAt:'',colorIdx:9},
+      {id:'s72',first:'Owen',last:'Roberts',sid:'10708',status:'present',updatedAt:'',colorIdx:0},
+      {id:'s73',first:'Priya',last:'Turner',sid:'10709',status:'present',updatedAt:'',colorIdx:1},
+      {id:'s74',first:'Rex',last:'Phillips',sid:'10710',status:'present',updatedAt:'',colorIdx:2},
+      {id:'s75',first:'Sofia',last:'Campbell',sid:'10711',status:'present',updatedAt:'',colorIdx:3},
+      {id:'s76',first:'Theo',last:'Evans',sid:'10712',status:'present',updatedAt:'',colorIdx:4},
+    ]
+  },
+];
+
+
+
+seed.forEach(cls => {
+data.classes.push({ id: cls.id, name: cls.name, color: cls.color });
+data.students[cls.id] = cls.students;
+});
+save();
+}
+
+function getTime() {
+return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+}
+
+function initColorPicker() {
+const cp = document.getElementById('colorPicker');
+cp.innerHTML = COLORS.map((c,i)=>
+`<div class="color-swatch ${i===0?'selected':''}" style="background:${c}" onclick="selectColor('${c}',this)"></div>`
+).join('');
+selectedColor = COLORS[0];
+}
+
+function selectColor(c, el) {
+selectedColor = c;
+document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
+el.classList.add('selected');
+}
+
+function openAddClass() {
+initColorPicker();
+document.getElementById('classNameInput').value = '';
+openModal('addClassModal');
+setTimeout(()=>document.getElementById('classNameInput').focus(),200);
+}
+
+function submitAddClass() {
+const name = document.getElementById('classNameInput').value.trim();
+if (!name) return shake('classNameInput');
+const id = 'cls_' + Date.now();
+data.classes.push({ id, name, color: selectedColor });
+data.students[id] = [];
+save();
+closeModal('addClassModal');
+renderSidebar();
+selectClass(id);
+}
+
+function submitAddStudent() {
+const first = document.getElementById('studentFirstInput').value.trim();
+const last = document.getElementById('studentLastInput').value.trim();
+const sid = document.getElementById('studentIdInput').value.trim();
+if (!first) return shake('studentFirstInput');
+if (!last) return shake('studentLastInput');
+const id = 'stu_' + Date.now();
+const colorIdx = data.students[selectedClass].length % AVATAR_COLORS.length;
+data.students[selectedClass].push({
+id, first, last, sid,
+status: 'present',
+updatedAt: getTime(),
+colorIdx
+});
+save();
+closeModal('addStudentModal');
+renderMain();
+}
+
+function setStatus(classId, studentId, status) {
+const stu = data.students[classId].find(s=>s.id===studentId);
+if (!stu) return;
+stu.status = status;
+stu.updatedAt = getTime();
+save();
+renderMain();
+}
+
+function deleteStudent(classId, studentId) {
+data.students[classId] = data.students[classId].filter(s=>s.id!==studentId);
+save();
+renderMain();
+}
+
+function deleteClass(classId) {
+if (!confirm('Delete this class and all its students?')) return;
+data.classes = data.classes.filter(c=>c.id!==classId);
+delete data.students[classId];
+save();
+if (selectedClass === classId) {
+selectedClass = data.classes.length ? data.classes[0].id : null;
+}
+renderSidebar();
+renderMain();
+}
+
+function selectClass(id) {
+selectedClass = id;
+filterStatus = 'all';
+searchQuery = '';
+renderSidebar();
+renderMain();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function shake(id) {
+const el = document.getElementById(id);
+el.style.borderColor = 'var(--red)';
+el.style.animation = 'shake 0.3s';
+setTimeout(()=>{ el.style.borderColor=''; el.style.animation=''; }, 400);
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+document.addEventListener('keydown', e=>{
+if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+});
+
+function renderSidebar() {
+const list = document.getElementById('classList');
+if (!data.classes.length) {
+list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No classes yet</div>';
+return;
+}
+list.innerHTML = data.classes.map(cls => {
+const students = data.students[cls.id] || [];
+const present = students.filter(s=>s.status==='present').length;
+const isActive = selectedClass === cls.id;
+return `<div class="class-item ${isActive?'active':''}" onclick="selectClass('${cls.id}')">
+<div class="class-dot" style="background:${cls.color}"></div>
+<span class="class-name">${escHtml(cls.name)}</span>
+<span class="class-count">${present}/${students.length}</span>
+</div>`;
+}).join('');
+}
+
+function renderMain() {
+const main = document.getElementById('mainContent');
+
+if (!selectedClass) {
+main.innerHTML = `<div class="welcome-screen">
+<div class="welcome-icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="4" y="4" width="14" height="14" rx="3" stroke="#C4C2BC" stroke-width="1.5"/><rect x="22" y="4" width="14" height="14" rx="3" stroke="#C4C2BC" stroke-width="1.5"/><rect x="4" y="22" width="14" height="14" rx="3" stroke="#C4C2BC" stroke-width="1.5"/><rect x="22" y="22" width="14" height="14" rx="3" stroke="#C4C2BC" stroke-width="1.5"/></svg></div>
+<div class="welcome-title">Welcome to JDL Tracker</div>
+<div class="welcome-sub">Add a class on the left to get started tracking your students.</div>
+</div>`;
+return;
+}
+
+const cls = data.classes.find(c=>c.id===selectedClass);
+if (!cls) return;
+const allStudents = data.students[selectedClass] || [];
+
+let students = allStudents;
+if (filterStatus !== 'all') students = students.filter(s=>s.status===filterStatus);
+if (searchQuery) {
+const q = searchQuery.toLowerCase();
+students = students.filter(s=>(s.first+' '+s.last).toLowerCase().includes(q) || (s.sid||'').toLowerCase().includes(q));
+}
+
+const total = allStudents.length;
+const present = allStudents.filter(s=>s.status==='present').length;
+const bathroom = allStudents.filter(s=>s.status==='bathroom').length;
+const out = allStudents.filter(s=>s.status==='out').length;
+const absent = allStudents.filter(s=>s.status==='absent').length;
+
+main.innerHTML = `
+<div class="main-header">
+<div>
+<div class="class-title" style="display:flex;align-items:center;gap:10px">
+<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${cls.color};flex-shrink:0"></span>
+${escHtml(cls.name)}
+</div>
+<div class="class-subtitle">${total} student${total!==1?'s':''}</div>
+</div>
+<div class="main-actions">
+<button class="btn btn-ghost" style="flex:none;font-size:12px;color:var(--red);padding:8px 12px;border-color:var(--border)" onclick="deleteClass('${cls.id}')">Delete Class</button>
+<button class="btn btn-primary" style="flex:none;padding:8px 16px;font-size:13px" onclick="openAddStudent()">＋ Add Student</button>
+</div>
+</div>
+
+<div class="stats-row">
+<div class="stat-card">
+<div class="stat-icon" style="background:#EFF4FF"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="#2563EB"/><rect x="9" y="2" width="5" height="5" rx="1" fill="#2563EB" opacity=".5"/><rect x="2" y="9" width="5" height="5" rx="1" fill="#2563EB" opacity=".5"/><rect x="9" y="9" width="5" height="5" rx="1" fill="#2563EB" opacity=".3"/></svg></div>
+<div><div class="stat-val">${total}</div><div class="stat-lbl">Total Students</div></div>
+</div>
+<div class="stat-card">
+<div class="stat-icon" style="background:var(--green-light)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5L6 12L13.5 4.5" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div><div class="stat-val" style="color:var(--green)">${present}</div><div class="stat-lbl">Present</div></div>
+</div>
+<div class="stat-card">
+<div class="stat-icon" style="background:var(--amber-light)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="2.5" stroke="#D97706" stroke-width="1.5"/><path d="M3 14c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+<div><div class="stat-val" style="color:var(--amber)">${bathroom}</div><div class="stat-lbl">Bathroom</div></div>
+</div>
+<div class="stat-card">
+<div class="stat-icon" style="background:var(--red-light)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/></svg></div>
+<div><div class="stat-val" style="color:var(--red)">${absent}</div><div class="stat-lbl">Absent</div></div>
+</div>
+</div>
+
+<div class="toolbar">
+<div class="search-wrap">
+<span class="search-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+<input class="search-input" placeholder="Search students…" value="${escHtml(searchQuery)}"
+oninput="searchQuery=this.value;renderMain()">
+</div>
+<button class="filter-btn ${filterStatus==='all'?'active':''}" onclick="filterStatus='all';renderMain()">All</button>
+<button class="filter-btn ${filterStatus==='present'?'active':''}" onclick="filterStatus='present';renderMain()">Present</button>
+<button class="filter-btn ${filterStatus==='bathroom'?'active':''}" onclick="filterStatus='bathroom';renderMain()">Bathroom</button>
+<button class="filter-btn ${filterStatus==='out'?'active':''}" onclick="filterStatus='out';renderMain()">Out</button>
+<button class="filter-btn ${filterStatus==='absent'?'active':''}" onclick="filterStatus='absent';renderMain()">Absent</button>
+</div>
+
+<div class="student-grid">
+${students.length === 0 ? renderEmpty(total) : students.map(s=>renderStudentCard(s, cls.id)).join('')}
+</div>
+`;
+}
+
+function renderEmpty(total) {
+if (total === 0) return `<div class="empty-state">
+<div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="12" r="5" stroke="#C4C2BC" stroke-width="1.5"/><path d="M6 28c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="#C4C2BC" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+<div class="empty-title">No students yet</div>
+<div class="empty-sub">Click "Add Student" to add your first student to this class.</div>
+</div>`;
+return `<div class="empty-state">
+<div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="14" cy="14" r="8" stroke="#C4C2BC" stroke-width="1.5"/><path d="M20 20L27 27" stroke="#C4C2BC" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+<div class="empty-title">No matches</div>
+<div class="empty-sub">Try a different search or filter.</div>
+</div>`;
+}
+
+function renderStudentCard(s, classId) {
+const [bgColor, textColor] = AVATAR_COLORS[s.colorIdx % AVATAR_COLORS.length];
+const initials = (s.first[0]||'') + (s.last[0]||'');
+const statusLabel = {present:'Present',bathroom:'Bathroom',out:'Out of Class',absent:'Absent'}[s.status];
+
+const btns = [
+{key:'present', label:'Present'},
+{key:'bathroom', label:'Bathroom'},
+{key:'out', label:'Out of Class'},
+{key:'absent', label:'Absent'},
+].map(b=>`<button class="status-btn ${s.status===b.key?'active-'+b.key:''}"
+onclick="setStatus('${classId}','${s.id}','${b.key}')">${b.label}</button>`).join('');
+
+return `<div class="student-card status-${s.status}">
+<div class="student-card-top">
+<div class="avatar" style="background:${bgColor};color:${textColor}">${initials.toUpperCase()}</div>
+<div>
+<div class="student-name">${escHtml(s.first)} ${escHtml(s.last)}</div>
+${s.sid ? `<div class="student-id">#${escHtml(s.sid)}</div>` : ''}
+</div>
+</div>
+<div class="student-status-badge"><div class="badge-dot"></div>${statusLabel}</div>
+<div class="status-btns">${btns}</div>
+<div class="card-footer">
+<span class="timestamp">Updated ${s.updatedAt}</span>
+<button class="del-btn" onclick="deleteStudent('${classId}','${s.id}')" title="Remove student">×</button>
+</div>
+</div>`;
+}
+
+function openAddStudent() {
+document.getElementById('studentFirstInput').value = '';
+document.getElementById('studentLastInput').value = '';
+document.getElementById('studentIdInput').value = '';
+openModal('addStudentModal');
+setTimeout(()=>document.getElementById('studentFirstInput').focus(),200);
+}
+
+function escHtml(s) {
+return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateDateBadge() {
+const now = new Date();
+document.getElementById('dateBadge').textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
+
+// CSS for shake animation
+const style = document.createElement('style');
+style.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}`;
+document.head.appendChild(style);
+
+// Init
+load();
+updateDateBadge();
+if (data.classes.length) selectedClass = data.classes[0].id;
+renderSidebar();
+renderMain();
+</script>
+</body>
+</html>
