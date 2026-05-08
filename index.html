@@ -43,6 +43,158 @@ font-size: 14px;
 line-height: 1.5;
 }
 
+/* ============================================================
+   PASSWORD GATE
+   ============================================================ */
+#passwordGate {
+position: fixed;
+inset: 0;
+z-index: 9999;
+background: #0F0E0C;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-direction: column;
+}
+
+#passwordGate.unlocked {
+animation: gateExit 0.45s cubic-bezier(.4,0,.2,1) forwards;
+pointer-events: none;
+}
+
+@keyframes gateExit {
+0%   { opacity: 1; transform: scale(1); }
+100% { opacity: 0; transform: scale(1.04); }
+}
+
+.gate-box {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 0;
+animation: gateEnter 0.5s cubic-bezier(.4,0,.2,1) both;
+}
+
+@keyframes gateEnter {
+from { opacity: 0; transform: translateY(18px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+
+.gate-logo {
+width: 52px; height: 52px;
+background: var(--accent);
+border-radius: 14px;
+display: flex; align-items: center; justify-content: center;
+margin-bottom: 22px;
+box-shadow: 0 0 0 8px rgba(37,99,235,0.15);
+}
+
+.gate-title {
+font-size: 22px;
+font-weight: 600;
+color: #FFFFFF;
+letter-spacing: -0.4px;
+margin-bottom: 6px;
+}
+
+.gate-sub {
+font-size: 13px;
+color: #6B6860;
+margin-bottom: 28px;
+}
+
+.gate-input-wrap {
+position: relative;
+width: 300px;
+margin-bottom: 12px;
+}
+
+#passwordInput {
+width: 100%;
+padding: 12px 44px 12px 16px;
+background: #1C1B18;
+border: 1.5px solid #2E2D29;
+border-radius: 10px;
+color: #FFFFFF;
+font-family: 'DM Mono', monospace;
+font-size: 15px;
+letter-spacing: 0.15em;
+outline: none;
+transition: border-color 0.15s;
+text-align: center;
+}
+
+#passwordInput::placeholder {
+color: #3E3D39;
+letter-spacing: 0.05em;
+font-family: 'DM Sans', sans-serif;
+font-size: 13px;
+}
+
+#passwordInput:focus {
+border-color: var(--accent);
+}
+
+#passwordInput.error {
+border-color: var(--red) !important;
+animation: pwShake 0.35s ease;
+}
+
+@keyframes pwShake {
+0%,100% { transform: translateX(0); }
+20%      { transform: translateX(-7px); }
+60%      { transform: translateX(7px); }
+80%      { transform: translateX(-4px); }
+}
+
+.eye-btn {
+position: absolute;
+right: 12px; top: 50%;
+transform: translateY(-50%);
+background: none; border: none;
+cursor: pointer;
+color: #4E4D49;
+padding: 4px;
+display: flex; align-items: center;
+transition: color 0.12s;
+}
+.eye-btn:hover { color: #9B9890; }
+
+.gate-error {
+font-size: 12px;
+color: var(--red);
+min-height: 18px;
+margin-bottom: 4px;
+text-align: center;
+transition: opacity 0.2s;
+}
+
+.gate-submit {
+width: 300px;
+padding: 12px;
+background: var(--accent);
+border: none;
+border-radius: 10px;
+color: white;
+font-family: 'DM Sans', sans-serif;
+font-size: 14px;
+font-weight: 600;
+cursor: pointer;
+transition: background 0.15s, transform 0.1s;
+letter-spacing: 0.1px;
+}
+.gate-submit:hover { background: #1D4ED8; }
+.gate-submit:active { transform: scale(0.98); }
+
+.gate-hint {
+margin-top: 18px;
+font-size: 11px;
+color: #3E3D39;
+font-family: 'DM Mono', monospace;
+letter-spacing: 0.05em;
+}
+/* ============================================================ */
+
 /* HEADER */
 .header {
 background: var(--surface);
@@ -450,6 +602,48 @@ padding: 60px 20px; text-align: center; color: var(--text2);
 </head>
 <body>
 
+<!-- ============================================================
+     PASSWORD GATE OVERLAY
+     ============================================================ -->
+<div id="passwordGate">
+  <div class="gate-box">
+    <div class="gate-logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="9" height="9" rx="2" fill="white"/>
+        <rect x="13" y="2" width="9" height="9" rx="2" fill="white" opacity="0.6"/>
+        <rect x="2" y="13" width="9" height="9" rx="2" fill="white" opacity="0.6"/>
+        <rect x="13" y="13" width="9" height="9" rx="2" fill="white" opacity="0.3"/>
+      </svg>
+    </div>
+    <div class="gate-title">JDL Tracker</div>
+    <div class="gate-sub">Staff access only — enter your password to continue</div>
+
+    <div class="gate-input-wrap">
+      <input
+        type="password"
+        id="passwordInput"
+        placeholder="Enter password"
+        autocomplete="off"
+        spellcheck="false"
+        onkeydown="if(event.key==='Enter')checkPassword()"
+        oninput="clearGateError()"
+      />
+      <button class="eye-btn" onclick="toggleEye()" title="Show/hide password" id="eyeBtn">
+        <svg id="eyeIcon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M1 8C1 8 3.5 3 8 3s7 5 7 5-2.5 5-7 5S1 8 1 8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="gate-error" id="gateError">&nbsp;</div>
+
+    <button class="gate-submit" onclick="checkPassword()">Unlock →</button>
+
+    <div class="gate-hint">ACS TEACHERS PORTAL</div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <div class="header">
 <div class="logo">
@@ -519,6 +713,53 @@ JDL Tracker
 </div>
 
 <script>
+/* ============================================================
+   PASSWORD GATE LOGIC
+   ============================================================ */
+const CORRECT_PASSWORD = 'ACSTEACHERS';
+let eyeVisible = false;
+
+function checkPassword() {
+  const input = document.getElementById('passwordInput');
+  const val = input.value; // Do NOT trim — must match exactly as typed
+
+  if (val === CORRECT_PASSWORD) {
+    const gate = document.getElementById('passwordGate');
+    gate.classList.add('unlocked');
+    // Remove from DOM after animation so it can't be re-shown by CSS tricks
+    setTimeout(() => { gate.style.display = 'none'; }, 460);
+  } else {
+    showGateError('Incorrect password. Try again.');
+    input.classList.add('error');
+    setTimeout(() => input.classList.remove('error'), 400);
+    input.select();
+  }
+}
+
+function showGateError(msg) {
+  const el = document.getElementById('gateError');
+  el.textContent = msg;
+}
+
+function clearGateError() {
+  document.getElementById('gateError').innerHTML = '&nbsp;';
+}
+
+function toggleEye() {
+  eyeVisible = !eyeVisible;
+  const inp = document.getElementById('passwordInput');
+  inp.type = eyeVisible ? 'text' : 'password';
+  document.getElementById('eyeIcon').innerHTML = eyeVisible
+    ? `<path d="M1 8C1 8 3.5 3 8 3s7 5 7 5-2.5 5-7 5S1 8 1 8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><line x1="2" y1="2" x2="14" y2="14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>`
+    : `<path d="M1 8C1 8 3.5 3 8 3s7 5 7 5-2.5 5-7 5S1 8 1 8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.4"/>`;
+}
+
+// Auto-focus the password field
+window.addEventListener('load', () => {
+  document.getElementById('passwordInput').focus();
+});
+/* ============================================================ */
+
 const COLORS = ['#2563EB','#16A34A','#D97706','#DC2626','#7C3AED','#0891B2','#DB2777','#059669','#EA580C','#6366F1'];
 const AVATAR_COLORS = [
 ['#DBEAFE','#1D4ED8'],['#DCFCE7','#15803D'],['#FEF3C7','#B45309'],
@@ -541,7 +782,6 @@ try {
 const s = localStorage.getItem('JBLV9_data');
 if (s) { data = JSON.parse(s); return; }
 } catch(e){}
-// Seed preset classes and students on first load
 const seed = [
   {
     id: 'cls_001', name: '8A Classroom', color: '#2563EB',
@@ -650,8 +890,6 @@ const seed = [
     ]
   },
 ];
-
-
 
 seed.forEach(cls => {
 data.classes.push({ id: cls.id, name: cls.name, color: cls.color });
@@ -929,12 +1167,10 @@ const now = new Date();
 document.getElementById('dateBadge').textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
 }
 
-// CSS for shake animation
 const style = document.createElement('style');
 style.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}`;
 document.head.appendChild(style);
 
-// Init
 load();
 updateDateBadge();
 if (data.classes.length) selectedClass = data.classes[0].id;
