@@ -774,12 +774,12 @@ let filterStatus = 'all';
 let searchQuery = '';
 
 function save() {
-try { localStorage.setItem('JBLV9_data', JSON.stringify(data)); } catch(e){}
+try { localStorage.setItem('JBLV11_data', JSON.stringify(data)); } catch(e){}
 }
 
 function load() {
 try {
-const s = localStorage.getItem('JBLV9_data');
+const s = localStorage.getItem('JBLV11_data');
 if (s) { data = JSON.parse(s); return; }
 } catch(e){}
 const seed = [
